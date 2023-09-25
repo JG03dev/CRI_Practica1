@@ -17,7 +17,7 @@ def load_puzzle_crossword(filename):
     for row in CW:
         row = [str(square) for square in row.strip().split('\t')]
         crossword.append(row)
-    return np.matrix(crossword)
+    return crossword
 
 def load_dictionary(filename):
     dictionary = []
