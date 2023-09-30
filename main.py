@@ -1,4 +1,4 @@
-__authors__ = ['1638618, 1636517, LUCIA-NIU']
+__authors__ = ['1638618, 1636517, 1633311']
 __group__ = 'GM08:30_3'
 
 import matplotlib.pyplot as plt
