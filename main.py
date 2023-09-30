@@ -29,17 +29,28 @@ def load_dictionary(filename):
 def satisfy_restriccions(assignation, LVA, R):
     pass
 
+def domini(Var, D):
+    possible_assignation = []
+    if '#' not in Var:
+        for word in D:
+            if len(word) == len(Var):
+                possible_assignation.append(word)
+
+    # QUITAR PALABRAS QUE YA ESTAN EN LVA
+    return possible_assignation
+
 def backtracking(LVA, LVNA, R, D):
     if not LVNA:
         return LVA
 
     Var = LVNA[0]
+    possible_assignation = domini(Var, D)
 
     for valor in D:
         if satisfy_restriccions(valor, LVA, R):
-            # TODO: Make Insertar y Cua
-
-
+            # Miramos si es fin de palabra
+                # Encontramos palabra generada
+                # Eliminamos palabra del diccionario
             Res = backtracking()
             if Res is not None:
                 return Res
@@ -54,7 +65,9 @@ if __name__ == '__main__':
 
     # Load up files.
     dictionary = load_dictionary("diccionari_CB_v3.txt")
+
     alphabet = list(string.ascii_uppercase)
+    alphabet.append('Ç')
 
     # Function call.
     res = backtracking(LVA, LVNA, dictionary, alphabet)
@@ -63,6 +76,3 @@ if __name__ == '__main__':
         print(res)
     else:
         print("Incorrect result.")
-
-
-
