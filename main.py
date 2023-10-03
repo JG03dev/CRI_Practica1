@@ -89,19 +89,22 @@ def satisfy_restriccions(assignWord, Var):
         hueco = []
 
         for i in range(Var.length):
-            if board[fila][columna] == '#':
-                return False
-            hueco.append(board[fila][columna])
-            if direccion == HORIZONTAL:
-                columna = columna + 1
+            if board[fila][columna] != '#':
+                hueco.append(board[fila][columna])
+                if direccion == HORIZONTAL:
+                    columna = columna + 1
+                else:
+                    fila = fila + 1
             else:
-                fila = fila + 1
+                check = False
 
-        for l1, l2 in zip(hueco, assignWord):
-            if l1 != l2 and l1 != '0':
-                return False
-
-    return True
+        if check:
+            for l1, l2 in zip(hueco, assignWord):
+                if l1 != l2 and l1 != '0':
+                    check = True
+            else:
+                check = False
+    return check
 
 def backtracking(LVA, LVNA, D):
     if not LVNA: return LVA
