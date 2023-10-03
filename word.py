@@ -5,7 +5,7 @@ from copy import copy, deepcopy
 
 
 class Word:
-    start = (0, 0)
+    start = [0,0]
     length = 0
     orientation = 0  # 0 for Horizontal, 1 for Vertical
     linked_words = []  # TODO mirar d'utilitzar numpy per aquesta estructura
