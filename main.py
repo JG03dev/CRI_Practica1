@@ -79,6 +79,7 @@ def load_dictionary(filename):
 
 
 def satisfy_restriccions(assignWord, Var):
+    check = False
     # Coincidan las longitudes
     if len(assignWord) == Var.length:
         # Mirar si coinciden letras
