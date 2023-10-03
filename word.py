@@ -9,6 +9,7 @@ class Word:
     length = 0
     orientation = 0  # 0 for Horizontal, 1 for Vertical
     linked_words = []  # TODO mirar d'utilitzar numpy per aquesta estructura
+    value = ''
 
     def __init__(self):
         return
@@ -17,27 +18,6 @@ class Word:
         self.start = s
         self.length = l
         self.orientation = o
-
-    def __init__(self, s, l, o, lw):
-        self.start = s
-        self.length = l
-        self.orientation = o
-        self.linked_words = lw
-
-    def __copy__(self):
-        return type(self)(self.start, self.length, self.orientation, self.linked_words)
-
-    def __deepcopy__(self, memo):  # memo is a dict of id's to copies
-        id_self = id(self)  # memoization avoids unnecesary recursion
-        _copy = memo.get(id_self)
-        if _copy is None:
-            _copy = type(self)(
-                deepcopy(self.start, memo),
-                deepcopy(self.length, memo),
-                deepcopy(self.orientation, memo),
-                deepcopy(self.linked_words, memo))
-            memo[id_self] = _copy
-        return _copy
 
     def crosses(self, w):
         # TODO: finish this implementation
