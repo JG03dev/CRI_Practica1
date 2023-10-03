@@ -37,3 +37,6 @@ class Word:
             return True
 
         return False
+    def pertany(self, casella):
+        return ((self.orientation == 0 and self.start[0] <= casella[0] <= self.start[0] + self.length)
+                    or (self.orientation == 1 and self.start[0] <= casella[0] <= self.start[0] + self.length))
