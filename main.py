@@ -34,22 +34,29 @@ def horizontal():
 
 
             
+def mirar_veins(casella, lw):
+    for Hw in LVNA:
+        if Hw.pertany([casella[0]+1, casella[1]]) or Hw.pertany([casella[0]-1, casella[1]]):
+            lw.append([Hw, casella])
 
 
 def vertical():
     # TODO: antes de hacer el append en LVNA llenar los crosses
     for columna in range(dim[1]):
         lista = []
+        lw = []
         for fila in range(dim[0]):
             if board[fila][columna] == '0':
                 lista.append('0')
+                mirar_veins([fila, columna], lw)
             else:
                 if len(lista) > 1:
                     w = Word([fila - len(lista), columna], len(lista), VERTICAL)
                     LVNA.append(copy(w))
                 lista.clear()
         if len(lista) > 1:
-            w = Word([dim[0] - len(lista), columna], len(lista), VERTICAL)
+            w = Word([dim[0] - len(lista), columna], len(lista), VERTICAL, lw)
+            w.update_linked()
             LVNA.append(copy(w))
 
 
@@ -72,7 +79,7 @@ def load_puzzle_crossword(filename):
 
 def load_dictionary(filename):
     dictionary = []
-    with open(filename, 'r') as fileDict:
+    with open(filename, 'r', encoding='ISO-8859-1') as fileDict:
         for line in fileDict:
             dictionary.append(line.strip())
     return dictionary
