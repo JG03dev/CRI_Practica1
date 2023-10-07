@@ -13,6 +13,17 @@ VERTICAL = 1        # CODIGO PARA PALABRA VERTICAL
 
 
 def horizontal(board, dim, LVNA):
+    """
+        Esta funcion busca las posiciones en las que se puede insertar una palabra de forma horizontal.
+
+        Parametros:
+            board (list): Una lista de listas que representa el tablero de juego.
+            dim (tuple): Un par ordenado que representa las dimensiones del tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+
+        Return:
+            None
+    """
     for fila in range(dim[0]):
         lista = []
         for columna in range(dim[1]):
@@ -28,13 +39,37 @@ def horizontal(board, dim, LVNA):
             LVNA.append(w)
 
 
-def mirar_veins(casella, lw, n_horizontals, LVNA):
+def mirar_veins(casilla, lw, n_horizontals, LVNA):
+    """
+        Esta funcion, dada una casilla especifica, examina las casillas adyacentes a los lados para identificar palabras que se
+        crucen con la palabra formada por la casilla dada.
+
+        Parametros:
+            casilla (list): Una lista de listas que representa el tablero de juego.
+            lw (list word): Una lista de objetos word.
+            n_horizontals (int): Un numero entero que delimita el numero de objetos word queremos analizar.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+
+        Return:
+            None
+    """
     for Hw in LVNA[:n_horizontals]:
-        if ((Hw.pertany([casella[0], casella[1]+1]) or Hw.pertany([casella[0], casella[1]-1])) and Hw not in lw):
-            lw.append([Hw, casella])
+        if ((Hw.pertany([casilla[0], casilla[1] + 1]) or Hw.pertany([casilla[0], casilla[1] - 1])) and Hw not in lw):
+            lw.append([Hw, casilla])
 
 
 def vertical(board, dim, LVNA):
+    """
+        Esta funcion busca las posiciones en las que se puede insertar una palabra de forma vertical.
+
+        Parametros:
+            board (list): Una lista de listas que representa el tablero de juego.
+            dim (tuple): Un par ordenado que representa las dimensiones del tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+
+        Return:
+            None
+    """
     n_horizontals = len(LVNA)
     for columna in range(dim[1]):
         lista = []
@@ -57,11 +92,33 @@ def vertical(board, dim, LVNA):
 
 
 def load_LVNA(board, dim ,LVNA):
+    """
+        Esta función hace un llamamiento de las funciones horizontal y vertical.
+
+        Parametros:
+            board (list): Una lista de listas que representa el tablero de juego.
+            dim (tuple): Un par ordenado que representa las dimensiones del tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+
+        Return:
+            None
+    """
     horizontal(board, dim, LVNA)
     vertical(board, dim, LVNA)
 
 
 def load_puzzle_crossword(filename, board, dim):
+    """
+        Esta funcion se encarga de cargar el tablero en la variable board.
+
+        Parametros:
+            filename (file txt): Fichero que contiene el tablero en formato .txt.
+            board (list): Una lista de listas que representa el tablero de juego.
+            dim (tuple): Un par ordenado que representa las dimensiones del tablero.
+
+        Return:
+            None
+    """
     with open(filename, 'r') as fileCW:
         # Obtain file content by rows.
         CW = fileCW.readlines()
@@ -71,11 +128,19 @@ def load_puzzle_crossword(filename, board, dim):
         row = [str(square) for square in row.strip().split('\t')]
         board.append(row)
         dim[0] = len(board)
-        dim[1] = len(board[0])  # Guardamos la dimension
-
+        dim[1] = len(board[0])  # Guardamos la dimensiones
 
 
 def load_dictionary(filename):
+    """
+        Esta funcion se encarga de cargar el diccionario.
+
+        Parametros:
+            filename (file txt): Fichero que contiene el diccionario en formato .txt.
+
+        Return:
+            word_dict (list): Contiene un listado del diccionario.
+    """
     word_dict = {}
     with open(filename, 'r', encoding='ISO-8859-1') as fileDict:
         for line in fileDict:
@@ -87,8 +152,18 @@ def load_dictionary(filename):
     return word_dict
 
 
-
 def satisfy_restriccions(assignWord, Var):
+    """
+        Esta funcion se comprobar las condiciones necesarias para poder insertar una palabra en el tablero.
+
+        Parametros:
+            assingWord (string): Posible palabra que pueda ser insertada en el tablero.
+            Var (object word): Objeto de tipo word donde almacena las propiedades de las palabras.
+
+        Return:
+            True/False (bool): Si la palabra cumple las condiciones se duelve True de lo contrario se devuelve False.
+    """
+
     posFila = Var.start[0]
     posCol = Var.start[1]
     direction = Var.orientation
@@ -104,11 +179,22 @@ def satisfy_restriccions(assignWord, Var):
 
 
 def backtracking(LVA, LVNA, D):
+    """
+        Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
+
+        Parametros:
+            LVA (list): Una lista que almacena las palabras asignadas en el tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+            D (string list): Lista que contiene el diccionario de palabras.
+
+        Return:
+            Res (list of object word): Devuelve LVA con la solucion definitiva
+    """
+
     if not LVNA:
         return LVA
 
     Var = LVNA[0]  # Guardem el cap.
-
     for assignWord in D[Var.length]:
         if satisfy_restriccions(assignWord, Var):
             Var.value = assignWord
@@ -123,6 +209,16 @@ def backtracking(LVA, LVNA, D):
 
 
 def update_board(board, res):
+    """
+        Esta funcion imprime la solución final en el tablero.
+
+        Parametros:
+            board (list): Una lista de listas que representa el tablero de juego.
+            res (list of object word): LVA con la solucion definitiva.
+
+        Return:
+            board (list): Devuelve el tablero actualizado.
+    """
     for w in res:
         if w.orientation == HORIZONTAL:
             for i in range(w.length):
@@ -140,7 +236,7 @@ if __name__ == '__main__':
     LVNA = []  # LLISTA VALORS NO ASSIGNATS
 
 
-    # Carga de tablero y diccionario.
+    # Carga de tablero y diccionario
     load_puzzle_crossword("crossword_CB_v3.txt", board, dim)
     load_LVNA(board, dim, LVNA)
     dictionary = load_dictionary("diccionari_CB_v3.txt")
