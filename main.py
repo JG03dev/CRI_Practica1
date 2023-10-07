@@ -5,6 +5,7 @@ import numpy as np
 import string
 from word import Word
 from copy import copy, deepcopy
+import time
 
 # VARIABLES GLOBALES
 HORIZONTAL = 0      # CODIGO PARA PALABRA HORIZONTAL
@@ -29,8 +30,7 @@ def horizontal(board, dim, LVNA):
 
 def mirar_veins(casella, lw, n_horizontals, LVNA):
     for Hw in LVNA[:n_horizontals]:
-        if ((Hw.pertany([casella[0], casella[1]+1]) or Hw.pertany([casella[0], casella[1]-1]))
-                and Hw not in lw):
+        if ((Hw.pertany([casella[0], casella[1]+1]) or Hw.pertany([casella[0], casella[1]-1])) and Hw not in lw):
             lw.append([Hw, casella])
 
 
@@ -65,6 +65,7 @@ def load_puzzle_crossword(filename, board, dim):
     with open(filename, 'r') as fileCW:
         # Obtain file content by rows.
         CW = fileCW.readlines()
+
     # Load text file into a NumPy matrix.
     for row in CW:
         row = [str(square) for square in row.strip().split('\t')]
@@ -73,19 +74,21 @@ def load_puzzle_crossword(filename, board, dim):
         dim[1] = len(board[0])  # Guardamos la dimension
 
 
-#TODO: Ordenar por longitud
+
 def load_dictionary(filename):
-    dictionary = []
+    word_dict = {}
     with open(filename, 'r', encoding='ISO-8859-1') as fileDict:
         for line in fileDict:
-            dictionary.append(line.strip())
-    return dictionary
+            word = line.strip()
+            length = len(word)
+            if length not in word_dict:
+                word_dict[length] = []
+            word_dict[length].append(word)
+    return word_dict
+
 
 
 def satisfy_restriccions(assignWord, Var):
-    if len(assignWord) != Var.length:
-        return False
-
     posFila = Var.start[0]
     posCol = Var.start[1]
     direction = Var.orientation
@@ -106,7 +109,7 @@ def backtracking(LVA, LVNA, D):
 
     Var = LVNA[0]  # Guardem el cap.
 
-    for assignWord in D:
+    for assignWord in D[Var.length]:
         if satisfy_restriccions(assignWord, Var):
             Var.value = assignWord
             Res = backtracking(LVA + [Var], LVNA[1:], D)
@@ -137,7 +140,7 @@ if __name__ == '__main__':
     LVNA = []  # LLISTA VALORS NO ASSIGNATS
 
 
-    # Carga de tablero y diccionario
+    # Carga de tablero y diccionario.
     load_puzzle_crossword("crossword_CB_v3.txt", board, dim)
     load_LVNA(board, dim, LVNA)
     dictionary = load_dictionary("diccionari_CB_v3.txt")
