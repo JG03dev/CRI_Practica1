@@ -4,7 +4,7 @@ __group__ = 'GM08:30_3'
 import numpy as np
 import string
 from word import Word
-from copy import copy
+from copy import copy, deepcopy
 
 # VARIABLES GLOBALES
 dim = [0, 0]        # Dimensions del taulell
@@ -22,38 +22,42 @@ def horizontal():
                 lista.append('0')
             else:
                 if len(lista) > 1:
-                    w = Word([fila, columna - len(lista)], len(lista), HORIZONTAL)
-                    LVNA.append(copy(w))
+                    w = Word(s=[fila, columna - len(lista)], l=len(lista), o=HORIZONTAL)
+                    LVNA.append(deepcopy(w))
                 lista.clear()
         if len(lista) > 1:
-            w = Word([fila, dim[1] - len(lista)], len(lista), HORIZONTAL)
-            LVNA.append(copy(w))
+            w = Word(s=[fila, dim[1] - len(lista)], l=len(lista), o=HORIZONTAL)
+            LVNA.append(deepcopy(w))
 
 
             
-def mirar_veins(casella, lw):
-    for Hw in LVNA:
-        if Hw.pertany([casella[0]+1, casella[1]]) or Hw.pertany([casella[0]-1, casella[1]]):
+def mirar_veins(casella, lw, n_horizontals):
+    for Hw in LVNA[:n_horizontals]:
+        if ((Hw.pertany([casella[0], casella[1]+1]) or Hw.pertany([casella[0], casella[1]-1]))
+                and Hw not in lw):
             lw.append([Hw, casella])
 
 
 def vertical():
+    n_horizontals = len(LVNA)
     for columna in range(dim[1]):
         lista = []
         lw = []
         for fila in range(dim[0]):
             if board[fila][columna] == '0':
                 lista.append('0')
-                mirar_veins([fila, columna], lw)
+                mirar_veins([fila, columna], lw, n_horizontals)
             else:
                 if len(lista) > 1:
-                    w = Word([fila - len(lista), columna], len(lista), VERTICAL)
-                    LVNA.append(copy(w))
+                    w = Word(s=[fila - len(lista), columna], l=len(lista), o=VERTICAL, lw=lw)
+                    w.update_linked()
+                    LVNA.append(deepcopy(w))
                 lista.clear()
+                lw.clear()
         if len(lista) > 1:
-            w = Word([dim[0] - len(lista), columna], len(lista), VERTICAL, lw)
+            w = Word(s=[dim[0] - len(lista), columna], l=len(lista), o=VERTICAL, lw=lw)
             w.update_linked()
-            LVNA.append(copy(w))
+            LVNA.append(deepcopy(w))
 
 
 def load_LVNA():
@@ -91,10 +95,10 @@ def satisfy_restriccions(assignWord, Var):
         for w, c in Var.linked_words:  # start[1] - c[1]
             if w.value != "":  # Lo mismo que no assignado
                 if direction == HORIZONTAL:
-                    if assignWord[posCol - c[1]] != w.value[w.start[1] - c[1]]:
+                    if assignWord[c[0] - posFila] != w.value[c[1] - posCol]:
                         return False
                 else:
-                    if assignWord[posFila - c[0]] != w.value[w.start[0] - c[0]]:
+                    if assignWord[c[0] - posFila] != w.value[c[1] - posCol]:
                         return False
         return True
 
@@ -105,10 +109,13 @@ def backtracking(LVA, LVNA, D):
     Var = LVNA[0]  # Guardem el cap.
     for assignWord in D:
         if satisfy_restriccions(assignWord, Var):
+            Var.value = assignWord
             LVA.append(Var)
             Res = backtracking(LVA, LVNA[1:], D)
             if Res is not None:
                 return Res
+    if LVA:
+        LVA.pop()
     return None
 
 
@@ -117,10 +124,10 @@ def update_board():
     for w in LVA:
         if w.orientation == HORIZONTAL:
             for i in range(w.length):
-                board[w.start[0] + i][w.start[1]] = w.value[i]
+                board[w.start[0]][w.start[1]+i] = w.value[i]
         else:
             for j in range(w.length):
-                board[w.start[0]][w.start[1] + j] = w.value[j]
+                board[w.start[0]+j][w.start[1]] = w.value[j]
     return board
 
 
@@ -136,7 +143,7 @@ if __name__ == '__main__':
     print(update_board())
 
     if res is not None:
-        print(res)
+        print([w.value for w in res])
     else:
         print("Incorrect result.")
 

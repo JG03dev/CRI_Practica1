@@ -19,8 +19,8 @@ class Word:
         return
 
     def pertany(self, casella):
-        return ((self.orientation == 0 and self.start[0] <= casella[0] <= self.start[0] + self.length)
-                    or (self.orientation == 1 and self.start[0] <= casella[0] <= self.start[0] + self.length))
+        return ((self.orientation == 0 and self.start[1] <= casella[1] <= self.start[1] + self.length and self.start[0] == casella[0])
+                    or (self.orientation == 1 and self.start[0] <= casella[0] <= self.start[0] + self.length and self.start[1] == casella[1]))
     def update_linked(self):
         for w, c in self.linked_words:
             w.linked_words.append([self, c])
