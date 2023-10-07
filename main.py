@@ -2,7 +2,6 @@ __authors__ = ['1638618, 1636517, 1633311']
 __group__ = 'GM08:30_3'
 
 import numpy as np
-import math
 import string
 from word import Word
 from copy import copy
@@ -14,8 +13,6 @@ LVA = []            # LLISTA VALORS ASSIGNATS
 LVNA = []           # LLISTA VALORS NO ASSIGNATS
 HORIZONTAL = 0      # CODIGO PARA PALABRA HORIZONTAL
 VERTICAL = 1        # CODIGO PARA PALABRA VERTICAL
-
-
 
 def horizontal():
     for fila in range(dim[0]):
@@ -41,7 +38,6 @@ def mirar_veins(casella, lw):
 
 
 def vertical():
-    # TODO: antes de hacer el append en LVNA llenar los crosses
     for columna in range(dim[1]):
         lista = []
         lw = []
@@ -86,71 +82,61 @@ def load_dictionary(filename):
 
 
 def satisfy_restriccions(assignWord, Var):
-    check = False
-    # Coincidan las longitudes
+
     if len(assignWord) == Var.length:
-        # Mirar si coinciden letras
-        fila = Var.start[0]
-        columna = Var.start[1]
-        direccion = Var.orientation
-        hueco = []
+        posFila = Var.start[0]
+        posCol = Var.start[1]
+        direction = Var.orientation
 
-        for i in range(Var.length):
-            if board[fila][columna] != '#':
-                hueco.append(board[fila][columna])
-                if direccion == HORIZONTAL:
-                    columna = columna + 1
+        for w, c in Var.linked_words:  # start[1] - c[1]
+            if w.value != "":  # Lo mismo que no assignado
+                if direction == HORIZONTAL:
+                    if assignWord[posCol - c[1]] != w.value[w.start[1] - c[1]]:
+                        return False
                 else:
-                    fila = fila + 1
-            else:
-                check = False
+                    if assignWord[posFila - c[0]] != w.value[w.start[0] - c[0]]:
+                        return False
+        return True
 
-        if check:
-            for l1, l2 in zip(hueco, assignWord):
-                if l1 != l2 and l1 != '0':
-                    check = True
-            else:
-                check = False
-    return check
+    return False
 
 def backtracking(LVA, LVNA, D):
     if not LVNA: return LVA
     Var = LVNA[0]  # Guardem el cap.
     for assignWord in D:
         if satisfy_restriccions(assignWord, Var):
-            update_board(Var, assignWord)
-            Res = backtracking(LVA.append(Var), LVNA[1:], D)
+            LVA.append(Var)
+            Res = backtracking(LVA, LVNA[1:], D)
             if Res is not None:
                 return Res
-            else:
-                board.clear()
     return None
 
 
 # TODO MODIFICAR UPDATE_BOARD
-def update_board(Var, assignWord):
-    fila = Var.start[0]
-    columna = Var.start[1]
-    for i in range(Var.length):
-        board[fila][columna] = assignWord[i]
-        if Var.orientation == HORIZONTAL:
-            columna += 1
+def update_board():
+    for w in LVA:
+        if w.orientation == HORIZONTAL:
+            for i in range(w.length):
+                board[w.start[0] + i][w.start[1]] = w.value[i]
         else:
-            fila += 1
+            for j in range(w.length):
+                board[w.start[0]][w.start[1] + j] = w.value[j]
+    return board
 
 
 if __name__ == '__main__':
     # Carga de tablero y diccionario.
     load_puzzle_crossword("crossword_CB_v3.txt")
     load_LVNA()
-
-    # TODO Arreglar diccionario.
     dictionary = load_dictionary("diccionari_CB_v3.txt")
 
     # Function call.
     res = backtracking(LVA, LVNA, dictionary)
 
+    print(update_board())
+
     if res is not None:
         print(res)
     else:
         print("Incorrect result.")
+

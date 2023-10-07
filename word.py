@@ -9,13 +9,13 @@ class Word:
     length = 0
     orientation = 0  # 0 for Horizontal, 1 for Vertical
     linked_words = []  # TODO mirar d'utilitzar numpy per aquesta estructura
-    value = ''
+    value = ""
 
     def __init__(self, s=0, l=0, o=0, lw=[]):
         self.start = s
         self.length = l
         self.orientation = o
-        self.linked_words=lw
+        self.linked_words = lw
         return
 
     def pertany(self, casella):
