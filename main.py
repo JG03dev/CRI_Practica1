@@ -178,7 +178,34 @@ def satisfy_restriccions(assignWord, Var):
     return True
 
 
-def backtracking(LVA, LVNA, D):
+
+
+def update_domain(Var, assignWord, LVNA):
+    """
+        Esta funcion actualiza los dominios de las variables no asignadas en LVNA considerando las restricciones en R
+        después de asignar el valor assignWord a la variable Var.
+        Parametros:
+            Var (object): Variable a la que se le ha asignado un valor.
+            assignWord (string): Valor asignado a la variable Var.
+            LVNA (list): Lista de variables no asignadas.
+        Return:
+            DA (dict): Diccionario con los dominios actualizados para cada variable en LVNA.
+                       Si algún dominio actualizado está vacío, retorna False.
+    """
+    """
+    DA = {}  # Diccionario para almacenar los dominios actualizados
+    for Var_unassigned in LVNA:
+        DA[Var_unassigned] = []  # Inicializamos el dominio de Var_unassigned como una lista vacía
+        for value in Var_unassigned.domain:
+            if not conflict(Var, assignWord, Var_unassigned,
+                            value):  # Si no hay conflicto, añadimos el valor al dominio de Var_unassigned
+                DA[Var_unassigned].append(value)
+        if not DA[Var_unassigned]:  # Si el dominio de Var_unassigned está vacío, retornamos False
+            return False
+    return DA
+    """
+
+def backForwardChecking(LVA, LVNA, D, DA):
     """
         Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
 
@@ -190,17 +217,18 @@ def backtracking(LVA, LVNA, D):
         Return:
             Res (list of object word): Devuelve LVA con la solucion definitiva
     """
-
     if not LVNA:
         return LVA
 
     Var = LVNA[0]  # Guardem el cap.
     for assignWord in D[Var.length]:
         if satisfy_restriccions(assignWord, Var):
-            Var.value = assignWord
-            Res = backtracking(LVA + [Var], LVNA[1:], D)
-            if Res is not None:
-                return Res
+            DA = update_domain(Var, assignWord, LVNA)
+            if any(not domini for domini in DA):  # TODO: Si no va cambiar condicion.
+                Var.value = assignWord
+                Res = backForwardChecking(LVA + [Var], LVNA[1:], D, DA)
+                if Res is not None:
+                    return Res
 
     # Si arribem aqui el valor de LVA deixa de tenir una assignació
     if LVA:
@@ -242,7 +270,7 @@ if __name__ == '__main__':
     dictionary = load_dictionary("diccionari_CB_v3.txt")
 
     # Function call.
-    res = backtracking(LVA, LVNA, dictionary)
+    res = backForwardChecking(LVA, LVNA, dictionary, None)
 
     if res is not None:
         update_board(board, res)
