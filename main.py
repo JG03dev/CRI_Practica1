@@ -8,8 +8,8 @@ from copy import copy, deepcopy
 import time
 
 # VARIABLES GLOBALES
-HORIZONTAL = 0      # CODIGO PARA PALABRA HORIZONTAL
-VERTICAL = 1        # CODIGO PARA PALABRA VERTICAL
+HORIZONTAL = 0  # CODIGO PARA PALABRA HORIZONTAL
+VERTICAL = 1  # CODIGO PARA PALABRA VERTICAL
 
 
 def horizontal(board, dim, LVNA):
@@ -91,7 +91,7 @@ def vertical(board, dim, LVNA):
             LVNA.append(w)
 
 
-def load_LVNA(board, dim ,LVNA):
+def load_LVNA(board, dim, LVNA):
     """
         Esta función hace un llamamiento de las funciones horizontal y vertical.
 
@@ -178,34 +178,42 @@ def satisfy_restriccions(assignWord, Var):
     return True
 
 
-
-
-def update_domain(Var, assignWord, LVNA):
+def update_domain(Var, assignWord, LVNA, D):
+    # TODO Cambiar descripcion
     """
-        Esta funcion actualiza los dominios de las variables no asignadas en LVNA considerando las restricciones en R
+        Esta funcion actualiza los dominios de las variables no asignadas en LVNA
         después de asignar el valor assignWord a la variable Var.
+
         Parametros:
             Var (object): Variable a la que se le ha asignado un valor.
             assignWord (string): Valor asignado a la variable Var.
             LVNA (list): Lista de variables no asignadas.
         Return:
-            DA (dict): Diccionario con los dominios actualizados para cada variable en LVNA.
-                       Si algún dominio actualizado está vacío, retorna False.
-    """
-    """
-    DA = {}  # Diccionario para almacenar los dominios actualizados
-    for Var_unassigned in LVNA:
-        DA[Var_unassigned] = []  # Inicializamos el dominio de Var_unassigned como una lista vacía
-        for value in Var_unassigned.domain:
-            if not conflict(Var, assignWord, Var_unassigned,
-                            value):  # Si no hay conflicto, añadimos el valor al dominio de Var_unassigned
-                DA[Var_unassigned].append(value)
-        if not DA[Var_unassigned]:  # Si el dominio de Var_unassigned está vacío, retornamos False
-            return False
-    return DA
+            DA (dict): Diccionario con los dominios actualizados. Si algún dominio actualizado está vacío, retorna False.
     """
 
+    DA = {Var: [assignWord]}
+
+    for obj_palabra in LVNA:
+        if obj_palabra is Var:
+            continue
+        DA[obj_palabra.length] = []
+        for word in D[obj_palabra.length]:
+            if satisfy_restriccions(word, obj_palabra):
+                DA[obj_palabra.length].append(word)
+        if not DA[obj_palabra.length]:  # Si está vacio devolvemos false.
+            return False
+    return DA
+
+
+def posibleDomini(Var, DA):
+    domain = []
+    if Var.length in DA:
+        domain = DA[Var.length]
+    return domain
+
 def backForwardChecking(LVA, LVNA, D, DA):
+    # TODO Cambiar descripcion
     """
         Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
 
@@ -221,14 +229,16 @@ def backForwardChecking(LVA, LVNA, D, DA):
         return LVA
 
     Var = LVNA[0]  # Guardem el cap.
-    for assignWord in D[Var.length]:
+    domain = posibleDomini(Var, DA)
+    for assignWord in domain:
         if satisfy_restriccions(assignWord, Var):
-            DA = update_domain(Var, assignWord, LVNA)
-            if any(not domini for domini in DA):  # TODO: Si no va cambiar condicion.
-                Var.value = assignWord
-                Res = backForwardChecking(LVA + [Var], LVNA[1:], D, DA)
-                if Res is not None:
-                    return Res
+            DA = update_domain(Var, assignWord, LVNA, D)
+            if DA is False:
+                continue
+            Var.value = assignWord
+            Res = backForwardChecking(LVA + [Var], LVNA[1:], D, DA)
+            if Res is not None:
+                return Res
 
     # Si arribem aqui el valor de LVA deixa de tenir una assignació
     if LVA:
@@ -262,7 +272,7 @@ if __name__ == '__main__':
     board = []  # TABLERO
     LVA = []  # LLISTA VALORS ASSIGNATS
     LVNA = []  # LLISTA VALORS NO ASSIGNATS
-
+    DA = {}
 
     # Carga de tablero y diccionario
     load_puzzle_crossword("crossword_CB_v3.txt", board, dim)
@@ -270,7 +280,8 @@ if __name__ == '__main__':
     dictionary = load_dictionary("diccionari_CB_v3.txt")
 
     # Function call.
-    res = backForwardChecking(LVA, LVNA, dictionary, None)
+    DA = dictionary
+    res = backForwardChecking(LVA, LVNA, dictionary, DA)
 
     if res is not None:
         update_board(board, res)
