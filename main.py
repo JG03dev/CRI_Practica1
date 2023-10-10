@@ -178,41 +178,33 @@ def satisfy_restriccions(assignWord, Var):
     return True
 
 
-def update_domain(Var, assignWord, LVNA, D):
-    # TODO Cambiar descripcion
-    """
-        Esta funcion actualiza los dominios de las variables no asignadas en LVNA
-        después de asignar el valor assignWord a la variable Var.
+def update_domain(Var, assignWord, LVNA, DA):
+    DA_aux = {k: list(v) for k, v in DA.items()}
 
-        Parametros:
-            Var (object): Variable a la que se le ha asignado un valor.
-            assignWord (string): Valor asignado a la variable Var.
-            LVNA (list): Lista de variables no asignadas.
-        Return:
-            DA (dict): Diccionario con los dominios actualizados. Si algún dominio actualizado está vacío, retorna False.
-    """
+    DA_aux[Var] = [assignWord]
 
-    DA = {Var: [assignWord]}
-
-    for obj_palabra in LVNA:
-        if obj_palabra is Var:
+    for lw, c in Var.linked_words:
+        if lw in LVA:
             continue
-        DA[obj_palabra.length] = []
-        for word in D[obj_palabra.length]:
-            if satisfy_restriccions(word, obj_palabra):
-                DA[obj_palabra.length].append(word)
-        if not DA[obj_palabra.length]:  # Si está vacio devolvemos false.
+        # Actualizar dominio de linked words.
+        words_to_remove = []
+        for word_D in DA_aux[lw]:
+            if Var.orientation == HORIZONTAL:
+                if assignWord[c[1] - Var.start[1]] != word_D[c[0] - lw.start[0]]:
+                    words_to_remove.append(word_D)
+            else:  # Vertical
+                if assignWord[c[0] - Var.start[0]] != word_D[c[1] - lw.start[1]]:
+                    words_to_remove.append(word_D)
+        for word in words_to_remove:
+            DA_aux[lw].remove(word)
+        if not DA_aux[lw]:  # Si está vacio devolvemos false.
             return False
-    return DA
+
+    return DA_aux
 
 
-def posibleDomini(Var, DA):
-    domain = []
-    if Var.length in DA:
-        domain = DA[Var.length]
-    return domain
 
-def backForwardChecking(LVA, LVNA, D, DA):
+def backForwardChecking(LVA, LVNA, DA):
     # TODO Cambiar descripcion
     """
         Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
@@ -229,14 +221,15 @@ def backForwardChecking(LVA, LVNA, D, DA):
         return LVA
 
     Var = LVNA[0]  # Guardem el cap.
-    domain = posibleDomini(Var, DA)
-    for assignWord in domain:
+
+    for assignWord in DA[Var]:
         if satisfy_restriccions(assignWord, Var):
-            DA = update_domain(Var, assignWord, LVNA, D)
-            if DA is False:
+            # Update domain
+            DA2 = update_domain(Var, assignWord, LVNA, DA)
+            if DA2 is False:
                 continue
             Var.value = assignWord
-            Res = backForwardChecking(LVA + [Var], LVNA[1:], D, DA)
+            Res = backForwardChecking(LVA + [Var], LVNA[1:], DA2)
             if Res is not None:
                 return Res
 
@@ -246,7 +239,7 @@ def backForwardChecking(LVA, LVNA, D, DA):
     return None
 
 
-def update_board(board, res):
+def print_board(board, res):
     """
         Esta funcion imprime la solución final en el tablero.
 
@@ -267,12 +260,21 @@ def update_board(board, res):
     return board
 
 
+def inicializarDA(LVNA, dictionary):
+    # TODO HACER DESCRIPCION
+    DA = {}
+    for obj_palabra in LVNA:
+        DA[obj_palabra] = []
+        for palabra in dictionary[obj_palabra.length]:
+            DA[obj_palabra].append(palabra)
+    return DA
+
+
 if __name__ == '__main__':
     dim = [0, 0]  # Dimensions del taulell
     board = []  # TABLERO
     LVA = []  # LLISTA VALORS ASSIGNATS
     LVNA = []  # LLISTA VALORS NO ASSIGNATS
-    DA = {}
 
     # Carga de tablero y diccionario
     load_puzzle_crossword("crossword_CB_v3.txt", board, dim)
@@ -280,11 +282,11 @@ if __name__ == '__main__':
     dictionary = load_dictionary("diccionari_CB_v3.txt")
 
     # Function call.
-    DA = dictionary
-    res = backForwardChecking(LVA, LVNA, dictionary, DA)
+    DA = inicializarDA(LVNA, dictionary)
+    res = backForwardChecking(LVA, LVNA, DA)
 
     if res is not None:
-        update_board(board, res)
+        print_board(board, res)
         for i in board:
             print(*i)
         print([w.value for w in res])
