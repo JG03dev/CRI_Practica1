@@ -6,6 +6,7 @@ import string
 from word import Word
 from copy import copy, deepcopy
 import time
+import unittest
 
 # VARIABLES GLOBALES
 HORIZONTAL = 0  # CODIGO PARA PALABRA HORIZONTAL
@@ -178,7 +179,7 @@ def satisfy_restriccions(assignWord, Var):
     return True
 
 
-def update_domain(Var, assignWord, LVNA, DA):
+def update_domain(Var, assignWord, LVNA, DA, LVA):
     DA_aux = {k: list(v) for k, v in DA.items()}
 
     DA_aux[Var] = [assignWord]
@@ -202,7 +203,64 @@ def update_domain(Var, assignWord, LVNA, DA):
 
     return DA_aux
 
+def backtracking(LVA, LVNA, D):
+    """
+        Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
 
+        Parametros:
+            LVA (list): Una lista que almacena las palabras asignadas en el tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+            D (string list): Lista que contiene el diccionario de palabras.
+
+        Return:
+            Res (list of object word): Devuelve LVA con la solucion definitiva
+    """
+
+    if not LVNA:
+        return LVA
+
+    Var = LVNA[0]  # Guardem el cap.
+    for assignWord in D[Var.length]:
+        if satisfy_restriccions(assignWord, Var):
+            Var.value = assignWord
+            Res = backtracking(LVA + [Var], LVNA[1:], D)
+            if Res is not None:
+                return Res
+
+    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    if LVA:
+        LVA[-1].value = ""
+    return None
+
+def backtrackingCountNodes(LVA, LVNA, D, count):
+    """
+        Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
+
+        Parametros:
+            LVA (list): Una lista que almacena las palabras asignadas en el tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+            D (string list): Lista que contiene el diccionario de palabras.
+
+        Return:
+            Res (list of object word): Devuelve LVA con la solucion definitiva
+    """
+    # TODO: fix count update
+    count += 1
+    if not LVNA:
+        return LVA
+
+    Var = LVNA[0]  # Guardem el cap.
+    for assignWord in D[Var.length]:
+        if satisfy_restriccions(assignWord, Var):
+            Var.value = assignWord
+            Res = backtrackingCountNodes(LVA + [Var], LVNA[1:], D, count)
+            if Res is not None:
+                return Res
+
+    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    if LVA:
+        LVA[-1].value = ""
+    return None
 
 def backForwardChecking(LVA, LVNA, DA):
     # TODO Cambiar descripcion
@@ -225,11 +283,47 @@ def backForwardChecking(LVA, LVNA, DA):
     for assignWord in DA[Var]:
         if satisfy_restriccions(assignWord, Var):
             # Update domain
-            DA2 = update_domain(Var, assignWord, LVNA, DA)
+            DA2 = update_domain(Var, assignWord, LVNA, DA, LVA)
             if DA2 is False:
                 continue
             Var.value = assignWord
             Res = backForwardChecking(LVA + [Var], LVNA[1:], DA2)
+            if Res is not None:
+                return Res
+
+    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    if LVA:
+        LVA[-1].value = ""
+    return None
+
+def backForwardCheckingCountNodes(LVA, LVNA, DA, count):
+    # TODO Cambiar descripcion
+    """
+        Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
+
+        Parametros:
+            LVA (list): Una lista que almacena las palabras asignadas en el tablero.
+            LVNA (list): Una lista que almacena las palabras no asignadas en el tablero.
+            D (string list): Lista que contiene el diccionario de palabras.
+
+        Return:
+            Res (list of object word): Devuelve LVA con la solucion definitiva
+    """
+    # TODO: fix count update
+    count += 1
+    if not LVNA:
+        return LVA
+
+    Var = LVNA[0]  # Guardem el cap.
+
+    for assignWord in DA[Var]:
+        if satisfy_restriccions(assignWord, Var):
+            # Update domain
+            DA2 = update_domain(Var, assignWord, LVNA, DA, LVA)
+            if DA2 is False:
+                continue
+            Var.value = assignWord
+            Res = backForwardCheckingCountNodes(LVA + [Var], LVNA[1:], DA2, count)
             if Res is not None:
                 return Res
 
@@ -250,6 +344,10 @@ def print_board(board, res):
         Return:
             board (list): Devuelve el tablero actualizado.
     """
+    if res is None:
+        print("Incorrect result.")
+        return
+    # Update board based on res
     for w in res:
         if w.orientation == HORIZONTAL:
             for i in range(w.length):
@@ -257,7 +355,13 @@ def print_board(board, res):
         else:
             for j in range(w.length):
                 board[w.start[0] + j][w.start[1]] = w.value[j]
-    return board
+    # Print board
+    for i in board:
+        print(*i)
+    print([w.value for w in res])
+
+    return
+
 
 
 def inicializarDA(LVNA, dictionary):
@@ -270,25 +374,110 @@ def inicializarDA(LVNA, dictionary):
     return DA
 
 
+class TestCrosswordSolver(unittest.TestCase):
+    def setUp(self):
+
+        # Tauler 1
+
+        dim = [0, 0]  # Dimensions del taulell
+
+        ## Test case backtracking
+
+        self.board = []  # TABLERO
+        self.LVNA = []  # LLISTA VALORS NO ASSIGNATS
+        self.LVA = []   # LLISTA VALORS ASSIGNATS
+
+        # Carga de tablero y diccionario
+        load_puzzle_crossword("crossword_CB_v3.txt", self.board, dim)
+        load_LVNA(self.board, dim, self.LVNA)
+        self.dictionary = load_dictionary("diccionari_CB_v3.txt")
+
+        ##########################################
+
+        ## Test case fordwardchecking
+        self.boardFC = []
+        self.LVNAFC = []
+        self.LVAFC = []
+
+        # Carga de tablero y diccionario
+        load_puzzle_crossword("crossword_CB_v3.txt", self.boardFC, dim)
+        load_LVNA(self.boardFC, dim, self.LVNAFC)
+        self.DA = inicializarDA(self.LVNAFC, self.dictionary)
+
+        ##########################################
+
+        ## Test case backtracking contant nodes recorreguts
+        self.boardN = []
+        self.LVNAN = []
+        self.LVAN = []
+
+        # Carga de tablero y diccionario
+        load_puzzle_crossword("crossword_CB_v3.txt", self.boardN, dim)
+        load_LVNA(self.boardN, dim, self.LVNAN)
+
+        ########################################
+
+
+        ## Test case fordwardchecking contant nodes recorreguts
+        self.boardFCN = []
+        self.LVNAFCN = []
+        self.LVAFCN = []
+
+        # Carga de tablero y diccionario
+        load_puzzle_crossword("crossword_CB_v3.txt", self.boardFCN, dim)
+        load_LVNA(self.boardFCN, dim, self.LVNAFCN)
+        self.DAN = inicializarDA(self.LVNAFCN, self.dictionary)
+
+        # Tauler 2
+        dim2 = [0, 0]  # Dimensions del taulell
+
+        ## Test case dificultat A
+
+        self.boardA = []
+        self.LVNAA = []
+        self.LVAA = []
+
+        # Carga de tablero y diccionario
+        load_puzzle_crossword("crossword_A.txt", self.boardA, dim2)
+        load_LVNA(self.boardA, dim2, self.LVNAA)
+        self.dictionaryA = load_dictionary("diccionari_A.txt")
+        self.DA_dictA = inicializarDA(self.LVNAA, self.dictionaryA)
+
+    def test_backtracking_sense_nodes(self):
+        result1 = backtracking([], self.LVNA, self.dictionary)
+        print_board(self.board, result1)
+        self.assertIsNotNone(result1)
+
+    def test_backForwardChecking_sense_nodes(self):
+        result2 = backForwardChecking([], self.LVNAFC, self.DA)
+        print_board(self.board, result2)
+        self.assertIsNotNone(result2)
+
+    def test_backtracking_amb_nodes(self):
+        count = 0
+        result3 = backtrackingCountNodes([], self.LVNAN, self.dictionary, count)
+        print(f"Total de nodes recorreguts en el backtracking es {count}")
+        print_board(self.board, result3)
+        self.assertIsNotNone(result3)
+
+    def test_backForwardChecking_amb_nodes(self):
+        count = 0
+        result4 = backForwardCheckingCountNodes([], self.LVNAFCN, self.DAN, count)
+        print(f"Total de nodes recorreguts en el Fordward Checking es {count}")
+        print_board(self.board, result4)
+        self.assertIsNotNone(result4)
+
+    def test_diff_A(self): # De moment no implementarem aquest
+        return
+        result5 = backForwardChecking([], self.LVNAA, self.DA_dictA)
+        print_board(self.board, result5)
+        self.assertIsNotNone(result5)
+
 if __name__ == '__main__':
-    dim = [0, 0]  # Dimensions del taulell
-    board = []  # TABLERO
-    LVA = []  # LLISTA VALORS ASSIGNATS
-    LVNA = []  # LLISTA VALORS NO ASSIGNATS
+    unittest.main()
 
-    # Carga de tablero y diccionario
-    load_puzzle_crossword("crossword_CB_v3.txt", board, dim)
-    load_LVNA(board, dim, LVNA)
-    dictionary = load_dictionary("diccionari_CB_v3.txt")
 
-    # Function call.
-    DA = inicializarDA(LVNA, dictionary)
-    res = backForwardChecking(LVA, LVNA, DA)
 
-    if res is not None:
-        print_board(board, res)
-        for i in board:
-            print(*i)
-        print([w.value for w in res])
-    else:
-        print("Incorrect result.")
+
+
+
