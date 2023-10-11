@@ -131,6 +131,7 @@ def cargarCrossword(filename, board, dim):
     dim[0] = len(board)
     dim[1] = len(board[0])
 
+
 def cargarDiccionario(filename):
     """
         Esta funcion se encarga de cargar el diccionario en una estructura dict, donde la clave indica el tamano de la palabra.
@@ -230,7 +231,7 @@ def backtracking(LVA, LVNA, D):
             if Res is not None:
                 return Res
 
-    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    # Si arribem aqui el valor de LVA deixa de tenir una assignacio.
     if LVA:
         LVA[-1].value = ""
     return None
@@ -262,7 +263,7 @@ def backtrackingCountNodes(LVA, LVNA, D, count):
             if Res is not None:
                 return Res
 
-    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    # Si arribem aqui el valor de LVA deixa de tenir una assignacio.
     if LVA:
         LVA[-1].value = ""
     return None
@@ -297,7 +298,7 @@ def backForwardChecking(LVA, LVNA, DA):
             if Res is not None:
                 return Res
 
-    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    # Si arribem aqui el valor de LVA deixa de tenir una assignacio.
     if LVA:
         LVA[-1].value = ""
     return None
@@ -334,7 +335,7 @@ def backForwardCheckingCountNodes(LVA, LVNA, DA, count):
             if Res is not None:
                 return Res
 
-    # Si arribem aqui el valor de LVA deixa de tenir una assignació
+    # Si arribem aqui el valor de LVA deixa de tenir una assignacio.
     if LVA:
         LVA[-1].value = ""
     return None
@@ -370,7 +371,6 @@ def print_board(board, res):
     print([w.value for w in res])
 
     return
-
 
 
 def inicializarDA(LVNA, dictionary):
