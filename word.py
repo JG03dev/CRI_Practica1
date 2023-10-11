@@ -38,7 +38,7 @@ class Word:
         self.linked_words = copy(lw) if lw is not None else []
         self.value = ""
 
-    def pertany(self, casella):
+    def pertenece(self, casella):
         """
             A partir de una casilla miramos si esta pertenece a esta classe Word (self).
 
