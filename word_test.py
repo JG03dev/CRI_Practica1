@@ -69,7 +69,7 @@ class TestCrosswordSolver(unittest.TestCase):
         # Carga de tablero y diccionario
         cargarCrossword("crossword_A.txt", self.boardA, dim2)
         cargarLVNA(self.boardA, dim2, self.LVNAA)
-        self.dictionaryA = cargarDiccionario("diccionari_A_test.txt")
+        self.dictionaryA = cargarDiccionario("diccionari_A_test100k.txt")
         self.DA_dictA = inicializarDA(self.LVNAA, self.dictionaryA)
 
     def test_backtracking_sense_nodes(self):

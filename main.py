@@ -5,6 +5,8 @@ import numpy as np
 from word import Word
 from copy import copy, deepcopy
 import subprocess
+import cProfile
+import pstats
 
 # VARIABLES GLOBALES
 HORIZONTAL = 0      # CONSTANTE PARA ORIENTACION DE PALABRA EN HORIZONTAL.
@@ -153,7 +155,7 @@ def cargarDiccionario(filename):
     return word_dict
 
 
-def satisfacerRestricciones(assignWord, Var):
+def satisfacerRestricciones(assignWord, Var, LVA):
     """
         Esta funcion se comprobar las condiciones necesarias para poder insertar una palabra en el tablero.
 
@@ -164,7 +166,8 @@ def satisfacerRestricciones(assignWord, Var):
         Return:
             True/False (bool): Si la palabra cumple las condiciones se duelve True de lo contrario se devuelve False.
     """
-
+    if assignWord in [w.value for w in LVA]:
+        return False
     for w, c in Var.linked_words:
         if w.value != "":
             if Var.orientation == HORIZONTAL:
@@ -173,7 +176,6 @@ def satisfacerRestricciones(assignWord, Var):
             elif assignWord[c[0] - Var.start[0]] != w.value[c[1] - w.start[1]]:
                 return False
     return True
-
 
 def actualizarDominio(Var, assignWord, DA, LVA):
     """
@@ -225,7 +227,7 @@ def backtracking(LVA, LVNA, D):
     Var = LVNA[0]
 
     for assignWord in D[Var.length]:
-        if satisfacerRestricciones(assignWord, Var):
+        if satisfacerRestricciones(assignWord, Var, LVA):
             Var.value = assignWord
             Res = backtracking(LVA + [Var], LVNA[1:], D)
             if Res is not None:
@@ -256,7 +258,7 @@ def backtrackingCountNodes(LVA, LVNA, D, count):
     Var = LVNA[0]
 
     for assignWord in D[Var.length]:
-        if satisfacerRestricciones(assignWord, Var):
+        if satisfacerRestricciones(assignWord, Var, LVA):
             Var.value = assignWord
             Res = backtrackingCountNodes(LVA + [Var], LVNA[1:], D, count)
             if Res is not None:
@@ -287,8 +289,7 @@ def backForwardChecking(LVA, LVNA, DA):
     Var = LVNA[0]
 
     for assignWord in DA[Var]:
-        #print("trying word", assignWord)
-        if satisfacerRestricciones(assignWord, Var):
+        if satisfacerRestricciones(assignWord, Var, LVA):
             # Update domain
             actDA = actualizarDominio(Var, assignWord, DA, LVA)
             if actDA is False:
@@ -324,7 +325,7 @@ def backForwardCheckingCountNodes(LVA, LVNA, DA, count):
     Var = LVNA[0]
 
     for assignWord in DA[Var]:
-        if satisfacerRestricciones(assignWord, Var):
+        if satisfacerRestricciones(assignWord, Var, LVA):
             # Update domain
             actDA = actualizarDominio(Var, assignWord, DA, LVA)
             if actDA is False:
@@ -354,16 +355,15 @@ def print_board(board, res):
 
     if res is None:
         print("Incorrect result.")
-        return
-
     # Update board based on res
-    for w in res:
-        if w.orientation == HORIZONTAL:
-            for i in range(w.length):
-                board[w.start[0]][w.start[1] + i] = w.value[i]
-        else:
-            for j in range(w.length):
-                board[w.start[0] + j][w.start[1]] = w.value[j]
+    else:
+        for w in res:
+            if w.orientation == HORIZONTAL:
+                for i in range(w.length):
+                    board[w.start[0]][w.start[1] + i] = w.value[i]
+            else:
+                for j in range(w.length):
+                    board[w.start[0] + j][w.start[1]] = w.value[j]
     # Print board
     for i in board:
         print(*i)
@@ -402,7 +402,36 @@ def run_tests():
         print(result.stdout)
 
 if __name__ == '__main__':
-    run_tests()
+    # Tauler 2
+    dim2 = [0, 0]  # Dimensions del taulell
+
+    ## Test case dificultat A
+
+    boardA = []
+    LVNAA = []
+    LVAA = []
+
+    # Carga de tablero y diccionario
+    cargarCrossword("crossword_A.txt", boardA, dim2)
+    print_board(boardA, [])
+    cargarLVNA(boardA, dim2, LVNAA)
+    dictionaryA = cargarDiccionario("diccionari_A_test.txt")
+    DA_dictA = inicializarDA(LVNAA, dictionaryA)
+    count = [0]
+    result = backForwardChecking([], LVNAA, DA_dictA)
+    print_board(boardA, result)
+
+    cProfile.run('backForwardChecking([], LVNAA, DA_dictA, count)', filename='profile_stats')
+
+    # Load the profile statistics from the saved file
+    stats = pstats.Stats('profile_stats')
+
+    # Sort the statistics by the total time spent in each function
+    stats.strip_dirs().sort_stats('cumulative')
+
+    # Print the top N functions by cumulative time
+    stats.print_stats(10)
+
 
 
 
