@@ -53,7 +53,7 @@ def busquedaVecinos(casilla, lw, n_horizontals, LVNA):
             None
     """
     for Hw in LVNA[:n_horizontals]:
-        if (Hw.pertenece([casilla[0], casilla[1] + 1]) or Hw.pertenece([casilla[0], casilla[1] - 1])) and Hw not in lw:
+        if Hw.pertenece([casilla[0], casilla[1]]): #and Hw not in lw:
             lw.append([Hw, casilla])
 
 
@@ -287,6 +287,7 @@ def backForwardChecking(LVA, LVNA, DA):
     Var = LVNA[0]
 
     for assignWord in DA[Var]:
+        #print("trying word", assignWord)
         if satisfacerRestricciones(assignWord, Var):
             # Update domain
             actDA = actualizarDominio(Var, assignWord, DA, LVA)

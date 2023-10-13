@@ -95,7 +95,6 @@ class TestCrosswordSolver(unittest.TestCase):
         self.assertIsNotNone(result4)
 
     def test_diff_A(self): # De moment no implementarem aquest
-        return
         result5 = backForwardChecking([], self.LVNAA, self.DA_dictA)
         print_board(self.board, result5)
         self.assertIsNotNone(result5)
