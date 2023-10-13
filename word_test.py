@@ -1,5 +1,7 @@
 import unittest
 from main import *
+import time
+
 
 class TestCrosswordSolver(unittest.TestCase):
     def setUp(self):
@@ -67,16 +69,22 @@ class TestCrosswordSolver(unittest.TestCase):
         # Carga de tablero y diccionario
         cargarCrossword("crossword_A.txt", self.boardA, dim2)
         cargarLVNA(self.boardA, dim2, self.LVNAA)
-        self.dictionaryA = cargarDiccionario("diccionari_A.txt")
+        self.dictionaryA = cargarDiccionario("diccionari_A_test.txt")
         self.DA_dictA = inicializarDA(self.LVNAA, self.dictionaryA)
 
     def test_backtracking_sense_nodes(self):
+        start_time = time.time()
         result1 = backtracking([], self.LVNA, self.dictionary)
+        end_time = time.time()
+        print("Time taken:", end_time - start_time, "seconds")
         print_board(self.board, result1)
         self.assertIsNotNone(result1)
 
     def test_backForwardChecking_sense_nodes(self):
+        start_time = time.time()
         result2 = backForwardChecking([], self.LVNAFC, self.DA)
+        end_time = time.time()
+        print("Time taken:", end_time - start_time, "seconds")
         print_board(self.board, result2)
         self.assertIsNotNone(result2)
 
@@ -95,10 +103,12 @@ class TestCrosswordSolver(unittest.TestCase):
         self.assertIsNotNone(result4)
 
     def test_diff_A(self): # De moment no implementarem aquest
-        result5 = backForwardChecking([], self.LVNAA, self.DA_dictA)
-        print_board(self.board, result5)
+        count = [0]
+        result5 = backForwardCheckingCountNodes([], self.LVNAA, self.DA_dictA, count)
+        print_board(self.boardA, result5)
         self.assertIsNotNone(result5)
 
 
 if __name__ == '__main__':
     unittest.main()
+
