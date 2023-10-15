@@ -94,7 +94,7 @@ def busquedaVertical(board, dim, LVNA):
 
 def cargarLVNA(board, dim, LVNA):
     """
-        Esta función hace un llamamiento de las funciones horizontal y vertical.
+        Esta función hace un llamamiento de las funciones busquedaHorizontal y busquedaVertical.
 
         Parametros:
             board (list): Una lista de listas que representa el tablero de juego.
@@ -162,7 +162,7 @@ def satisfacerRestricciones(assignWord, Var, LVA):
         Parametros:
             assingWord (string): Posible palabra que pueda ser insertada en el tablero.
             Var (object word): Objeto de tipo word donde almacena las propiedades de las palabras.
-
+            LVA (list): Una lista que almacena las palabras asignadas en el tablero.
         Return:
             True/False (bool): Si la palabra cumple las condiciones se duelve True de lo contrario se devuelve False.
     """
@@ -177,6 +177,7 @@ def satisfacerRestricciones(assignWord, Var, LVA):
                 return False
     return True
 
+
 def actualizarDominio(Var, assignWord, DA, LVA):
     """
         Esta funcion se encarga actualizar los dominios de las variables no asignadas teniendo en cuenta las
@@ -185,7 +186,7 @@ def actualizarDominio(Var, assignWord, DA, LVA):
         Parametros:
             Var (object word): Objeto de tipo word donde almacena las propiedades de las palabras.
             assingWord (string): Posible palabra que pueda ser insertada en el tablero.
-            DA (dictionary): Diccionario que contiene la lista de dominios para cada posicion del tablero.
+            DA (dictionary): Diccionario que contiene la lista de dominios para cada posicion start de LVNA del tablero.
             LVA (list): Una lista que almacena las palabras asignadas en el tablero.
 
         Return:
@@ -242,6 +243,7 @@ def backtracking(LVA, LVNA, D):
 def backtrackingCountNodes(LVA, LVNA, D, count):
     """
         Esta funcion implementa backtracking sobre el conjunto LVNA de forma que obtenemos como resultado LVA.
+        Esta función es una variante que cuenta el numero de nodos abiertos durante la ejecucion.
 
         Parametros:
             LVA (list): Una lista que almacena las palabras asignadas en el tablero.
@@ -308,7 +310,8 @@ def backForwardChecking(LVA, LVNA, DA):
 def backForwardCheckingCountNodes(LVA, LVNA, DA, count):
     """
         Esta funcion implementa backtracking combinado con forwardchecking sobre el conjunto LVNA
-        de forma que obtenemos como resultado LVA.
+        de forma que obtenemos como resultado LVA. Esta función es una variante que cuenta el numero de nodos
+        abiertos durante la ejecucion.
 
         Parametros:
             LVA (list): Una lista que almacena las palabras asignadas en el tablero.
@@ -392,6 +395,7 @@ def inicializarDA(LVNA, dictionary):
             DA[obj_palabra].append(palabra)
     return DA
 
+
 # Define a function to run the tests
 def run_tests():
     result = subprocess.run(['python', 'test_main.py'], capture_output=True, text=True)
@@ -400,6 +404,7 @@ def run_tests():
     else:
         print("Tests failed. Here's the output:\n")
         print(result.stdout)
+
 
 if __name__ == '__main__':
     # Tauler 2
@@ -431,11 +436,3 @@ if __name__ == '__main__':
 
     # Print the top N functions by cumulative time
     stats.print_stats(10)
-
-
-
-
-
-
-
-

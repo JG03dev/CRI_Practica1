@@ -14,7 +14,6 @@ class TestCrosswordSolver(unittest.TestCase):
 
         self.board = []  # TABLERO
         self.LVNA = []  # LLISTA VALORS NO ASSIGNATS
-        self.LVA = []   # LLISTA VALORS ASSIGNATS
 
         # Carga de tablero y diccionario
         cargarCrossword("crossword_CB_v3.txt", self.board, dim)
@@ -26,7 +25,6 @@ class TestCrosswordSolver(unittest.TestCase):
         ## Test case fordwardchecking
         self.boardFC = []
         self.LVNAFC = []
-        self.LVAFC = []
 
         # Carga de tablero y diccionario
         cargarCrossword("crossword_CB_v3.txt", self.boardFC, dim)
@@ -38,7 +36,6 @@ class TestCrosswordSolver(unittest.TestCase):
         ## Test case backtracking contant nodes recorreguts
         self.boardN = []
         self.LVNAN = []
-        self.LVAN = []
 
         # Carga de tablero y diccionario
         cargarCrossword("crossword_CB_v3.txt", self.boardN, dim)
@@ -50,7 +47,6 @@ class TestCrosswordSolver(unittest.TestCase):
         ## Test case fordwardchecking contant nodes recorreguts
         self.boardFCN = []
         self.LVNAFCN = []
-        self.LVAFCN = []
 
         # Carga de tablero y diccionario
         cargarCrossword("crossword_CB_v3.txt", self.boardFCN, dim)
@@ -60,17 +56,27 @@ class TestCrosswordSolver(unittest.TestCase):
         # Tauler 2
         dim2 = [0, 0]  # Dimensions del taulell
 
-        ## Test case dificultat A
+        # Test A con nodos
 
         self.boardA = []
         self.LVNAA = []
-        self.LVAA = []
 
         # Carga de tablero y diccionario
         cargarCrossword("crossword_A.txt", self.boardA, dim2)
         cargarLVNA(self.boardA, dim2, self.LVNAA)
-        self.dictionaryA = cargarDiccionario("diccionari_A_test100k.txt")
+        self.dictionaryA = cargarDiccionario("diccionari_A_test50k.txt")
         self.DA_dictA = inicializarDA(self.LVNAA, self.dictionaryA)
+
+        ########################################
+
+        self.boardAN = []
+        self.LVNAAN = []
+
+        # Carga de tablero y diccionario
+        cargarCrossword("crossword_A.txt", self.boardAN, dim2)
+        cargarLVNA(self.boardAN, dim2, self.LVNAAN)
+        self.DA_dictAN = inicializarDA(self.LVNAAN, self.dictionaryA)
+
 
     def test_backtracking_sense_nodes(self):
         start_time = time.time()
@@ -102,11 +108,20 @@ class TestCrosswordSolver(unittest.TestCase):
         print_board(self.board, result4)
         self.assertIsNotNone(result4)
 
-    def test_diff_A(self): # De moment no implementarem aquest
-        count = [0]
-        result5 = backForwardCheckingCountNodes([], self.LVNAA, self.DA_dictA, count)
+    def test_diff_A(self):
+        start_time = time.time()
+        result5 = backForwardChecking([], self.LVNAA, self.DA_dictA)
+        end_time = time.time()
+        print("Time taken:", end_time - start_time, "seconds")
         print_board(self.boardA, result5)
         self.assertIsNotNone(result5)
+
+    def test_diff_A_node(self):
+        count = [0]
+        result6 = backForwardCheckingCountNodes([], self.LVNAAN, self.DA_dictAN, count)
+        print(f"Total de nodes recorreguts en el Fordward Checking es {count[0]}")
+        print_board(self.boardAN, result6)
+        self.assertIsNotNone(result6)
 
 
 if __name__ == '__main__':
